@@ -1,37 +1,34 @@
 CC := gcc
-LL      := ar
+LL := ar
 
-INCLUDEDIR := $(pwd)include/
+INCLUDEDIR := $(CURDIR)/include/
 
 CFLAGS  := -Wall -Wextra -std=c99 -Iheaders -I$(INCLUDEDIR)
 
-SRC_ := $(wildcard src/*.c)
-
-SRC_NODIR := $(notdir $(wildcard src/*.c))
-
-SRC := $(SRC_)
-SRC += $(wildcard src/linux/*.c)
-
-OBJ     := $(addprefix build/, $(SRC_NODIR:.c=.o))
+# --- Linux Config ---
+SRC_BASE  := $(wildcard src/*.c)
+SRC_LINUX := $(wildcard src/linux/*.c)
+# Keep object arrays isolated to their actual file paths
+OBJ_LINUX := $(patsubst src/%.c, build/linux/%.o, $(SRC_BASE)) \
+             $(patsubst src/linux/%.c, build/linux/%.o, $(SRC_LINUX))
 
 TARGET := build/lib/linux/libnet.a
 
-LDFLAGS := 
-LDLIBS := 
-
-MINGW := x86_64-w64-mingw32-gcc
+# --- Windows (MinGW) Config ---
+MINGW    := x86_64-w64-mingw32-gcc
 MINGW_LL := x86_64-w64-mingw32-ar
 
 MINGW_FLAGS := -Wall -Wextra -std=c99 -I$(INCLUDEDIR) -g \
-	       -I/usr/x86_64-w64-mingw32/include/ \
-	       -Wl,-subsystem,windows -lmingw32 -lws2_32 
-MINGW_LDLIBS := -L/usr/x86_64-w64-mingw32/lib/ 
+               -I/usr/x86_64-w64-mingw32/include/
 
-MINGW_SRC := $(wildcard src/win/*.c)
-
-MINGW_OBJ := $(addprefix build/, $(SRC_NODIR:.c=.obj))
+SRC_WIN   := $(wildcard src/win/*.c)
+OBJ_WIN   := $(patsubst src/%.c, build/win/%.obj, $(SRC_BASE)) \
+             $(patsubst src/win/%.c, build/win/%.obj, $(SRC_WIN))
 
 MINGW_TARGET := build/lib/win/libnet.lib
+
+# Tell Make these are commands, not actual file outputs
+.PHONY: all linux windows clean
 
 all: linux windows 
 
@@ -39,16 +36,37 @@ linux: $(TARGET)
 
 windows: $(MINGW_TARGET)
 
-$(TARGET): $(OBJ)
+# --- Linux Build Rules ---
+$(TARGET): $(OBJ_LINUX)
+	@mkdir -p $(dir $@)
 	$(LL) rcs $@ $^
 
-$(MINGW_TARGET): $(MINGW_OBJ) 
-	$(MINGW_LL) rcs $(@) $^
-
-$(OBJ): $(SRC)
+# Pattern rule for base files
+build/linux/%.o: src/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(MINGW_OBJ): $(SRC_) $(MINGW_SRC)
+# Pattern rule for linux-specific subfolder files
+build/linux/%.o: src/linux/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
+# --- Windows Build Rules ---
+$(MINGW_TARGET): $(OBJ_WIN)
+	@mkdir -p $(dir $@)
+	$(MINGW_LL) rcs $@ $^
+
+# Pattern rule for base files compiled for windows
+build/win/%.obj: src/%.c
+	@mkdir -p $(dir $@)
 	$(MINGW) $(MINGW_FLAGS) -c $< -o $@
+
+# Pattern rule for windows-specific subfolder files
+build/win/%.obj: src/win/%.c
+	@mkdir -p $(dir $@)
+	$(MINGW) $(MINGW_FLAGS) -c $< -o $@
+
+
 clean: 
-	rm -f $(OBJ) $(MINGW_OBJ) $(TARGET) $(MINGW_TARGET) 
+	rm -rf build/

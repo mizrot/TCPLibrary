@@ -1,6 +1,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include <stdio.h>
+
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -36,7 +38,7 @@ typedef int socket_t;
 
 // Error handle
 #ifdef _WIN32
-#define print_error(msg) printf("%s. Windows Error: %d\n", msg, WSAGetLastError())();
+#define print_error(msg) printf("%s. Windows Error: %d\n", msg, WSAGetLastError());
 #else
 #define print_error(msg) perror(msg)
 #endif
