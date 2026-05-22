@@ -1,24 +1,9 @@
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#endif
+#ifndef IPV4SOCKET_H
+#define IPV4SOCKET_H
 
-#ifdef _WIN32
-#define close(sock) closesocket(sock);
-#else
-#define close(sock) close(sock);
-#endif
+#include "platform.h"
 
-#ifdef _WIN32
-typedef SOCKET socket_t;
-#else
-typedef int socket_t;
-#endif
-
-
-socket_t create_empy_socket();
+socket_t create_empty_socket();
 struct sockaddr_in create_ipv4(const char *str, int port);
+
+#endif
