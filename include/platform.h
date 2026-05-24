@@ -2,6 +2,7 @@
 #define PLATFORM_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -23,12 +24,6 @@ typedef int socket_t;
 #define close(socket) closesocket(socket)
 #else
 #define close(socket) close(socket)
-#endif
-
-#ifdef _WIN32
-#define INVALID_SOCKET_VALUE INVALID_SOCKET
-#else
-#define INVALID_SOCKET_VALUE -1
 #endif
 
 #ifndef _WIN32
