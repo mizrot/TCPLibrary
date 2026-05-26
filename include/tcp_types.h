@@ -5,7 +5,8 @@
 
 struct message_t{
    socket_t socket;
-   const char* string; 
+   char* string; 
+   unsigned int len;
 };
 
 struct tcp_ipv4{

@@ -1,0 +1,39 @@
+#include<platform.h>
+#include<tcp_types.h>
+#include<data.h>
+#include<ipv4socket.h>
+#include<stdlib.h>
+
+int recieve_message(socket_t socket, char *msg, unsigned int max_len){
+  int code = recv(socket, msg,  max_len, 0);
+  if (code != SOCKET_ERROR) {
+
+     if (code == 0){
+
+      close_socket(socket);
+      return code;
+     }
+
+     goto success;
+
+     } else {
+
+	print_error("Coudn't recieve a message");
+	return code;
+
+}
+  success:
+	  return 0;
+}
+
+int send_message(socket_t socket, const char *msg, unsigned int len){
+
+  if (send(socket, msg, len, 0) == SOCKET_ERROR){
+
+	print_error("Coudn't send a message");
+	return -1;
+
+   }
+
+return 0;
+}

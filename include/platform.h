@@ -1,5 +1,5 @@
-#ifndef PLATFORM_H
-#define PLATFORM_H
+#ifndef TCP_PLATFORM_H
+#define TCP_PLATFORM_H
 
 #include <stdio.h>
 #include <stdbool.h>

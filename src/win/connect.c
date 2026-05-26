@@ -1,11 +1,11 @@
 #include "../../include/connect.h"
 
-int establish_connection_client(socket_t clientSocket, struct sockaddr *server){
+int establish_connection_client(socket_t clientSocket, struct sockaddr *server, socklen_t len){
 
 
   	const unsigned int MAX_TIMEOUT = 8;
 	unsigned int timeout = 0;
-   	while(timeout <= MAX_TIMEOUT && connect(clientSocket , (struct sockaddr *)server , sizeof(*server)) == SOCKET_ERROR)
+   	while(timeout <= MAX_TIMEOUT && connect(clientSocket , server , len) == SOCKET_ERROR)
   	{
     		print_error("Connect failed. waiting");
 		Sleep(2000);
@@ -20,13 +20,17 @@ int establish_connection_client(socket_t clientSocket, struct sockaddr *server){
 	
 }
 
-int establish_connection_server(socket_t serverSocket, struct sockaddr *client){
+socket_t establish_connection_server(socket_t serverSocket, struct sockaddr *client, socklen_t len){
 
-	while(listen(serverSocket, 5) == INVALID_SOCKET_VALUE)
+	while(listen(serverSocket, 5) == SOCKET_ERROR)
 	{
 	        print_error("Connect was pending too long or connection failed. waiting");
 		Sleep(2000);
 	}
-	
-	return 1;
+  	socket_t sock = accept(serverSocket,client, &len);
+	  if (sock == INVALID_SOCKET) {
+	    print_error("Socket busy or not responding. ");
+	    return INVALID_SOCKET;
+	  }
+  return sock;
 }

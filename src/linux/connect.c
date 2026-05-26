@@ -21,19 +21,18 @@ int establish_connection_client(socket_t clientSocket, struct sockaddr *server,
   return 1;
 }
 
-int establish_connection_server(socket_t serverSocket,
-                                struct sockaddr *client, socklen_t len, socket_t *out) {
+socket_t establish_connection_server(socket_t serverSocket,
+                                     struct sockaddr *client, socklen_t len) {
 
   while (listen(serverSocket, 5) == SOCKET_ERROR) {
     print_error("Connect was pending too long or connection failed. waiting");
     sleep(2);
   }
 
-  socket_t sock = accept(serverSocket, (struct sockaddr *)client, &len);
-  if (sock == INVALID_SOCKET) {
+  socket_t sock = accept(serverSocket, client, &len);
+  if (sock < 0) {
     print_error("Socket busy or not responding. ");
-    return -1;
+    return INVALID_SOCKET;
   }
-  *out = sock;
-  return 0;
+  return sock;
 }
