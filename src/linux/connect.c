@@ -18,7 +18,7 @@ int establish_connection_client(socket_t clientSocket, struct sockaddr *server,
     return -1;
   }
 
-  return 1;
+  return 0;
 }
 
 socket_t establish_connection_server(socket_t serverSocket,

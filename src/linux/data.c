@@ -4,8 +4,9 @@
 #include<ipv4socket.h>
 #include<stdlib.h>
 
-int recieve_message(socket_t socket, char *msg, unsigned int max_len){
-  int code = recv(socket, msg,  max_len, 0);
+int recieve_message(socket_t socket, char *msg){
+
+  int code = recv(socket, msg, MAX_MSG_SIZE, 0);
   if (code != -1) {
 
      if (code == 0){

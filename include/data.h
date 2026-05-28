@@ -4,7 +4,7 @@
 #include<platform.h>
 #include<tcp_types.h>
 
-int recieve_message(socket_t socket, char *msg, unsigned int len);
+int recieve_message(socket_t socket, char *msg);
 int send_message(socket_t socket, const char *msg, unsigned int len);
 
 #endif

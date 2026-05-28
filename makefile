@@ -3,7 +3,9 @@ LL := ar
 
 INCLUDEDIR := $(CURDIR)/include/
 
-CFLAGS  := -Wall -Wextra -std=c99 -Iheaders -I$(INCLUDEDIR)
+CFLAGS  := -Wall -Wextra -std=c99 -Iheaders -I$(INCLUDEDIR)  -g
+LDIR := .
+LIBS_LINUX := -lpthread
 
 # --- Linux Config ---
 SRC_BASE  := $(wildcard src/*.c)
@@ -20,6 +22,7 @@ MINGW_LL := x86_64-w64-mingw32-ar
 
 MINGW_FLAGS := -Wall -Wextra -std=c99 -I$(INCLUDEDIR) -g \
                -I/usr/x86_64-w64-mingw32/include/
+LIBS_WIN  := -lkernel32 -lws2_32
 
 SRC_WIN   := $(wildcard src/win/*.c)
 OBJ_WIN   := $(patsubst src/%.c, build/win/%.obj, $(SRC_BASE)) \
@@ -44,28 +47,28 @@ $(TARGET): $(OBJ_LINUX)
 # Pattern rule for base files
 build/linux/%.o: src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ $(LIBS_LINUX)
 
 # Pattern rule for linux-specific subfolder files
 build/linux/%.o: src/linux/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ $(LIBS_LINUX)
 
 
 # --- Windows Build Rules ---
 $(MINGW_TARGET): $(OBJ_WIN)
 	@mkdir -p $(dir $@)
-	$(MINGW_LL) rcs $@ $^
+	$(MINGW_LL) rcs $@ $^ 
 
 # Pattern rule for base files compiled for windows
 build/win/%.obj: src/%.c
 	@mkdir -p $(dir $@)
-	$(MINGW) $(MINGW_FLAGS) -c $< -o $@
+	$(MINGW) $(MINGW_FLAGS) -c $< -o $@ $(LIBS_WIN)
 
 # Pattern rule for windows-specific subfolder files
 build/win/%.obj: src/win/%.c
 	@mkdir -p $(dir $@)
-	$(MINGW) $(MINGW_FLAGS) -c $< -o $@
+	$(MINGW) $(MINGW_FLAGS) -c $< -o $@ $(LIBS_WIN)
 
 
 clean: 
