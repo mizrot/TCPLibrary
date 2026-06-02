@@ -1,4 +1,4 @@
-#include "../../include/connect.h"
+#include"connect.h"
 
 int establish_connection_client(socket_t clientSocket, struct sockaddr *server, socklen_t len){
 
@@ -8,8 +8,8 @@ int establish_connection_client(socket_t clientSocket, struct sockaddr *server, 
    	while(timeout <= MAX_TIMEOUT && connect(clientSocket , server , len) == SOCKET_ERROR)
   	{
     		print_error("Connect failed. waiting");
-		Sleep(2000);
-		timeout += 2000;
+		os_sleep(2*_TO_SEC);
+		timeout += 2*_TO_SEC;
   	}      
 	if (timeout == MAX_TIMEOUT){
 		print_error("Maximum timeout reached");
@@ -25,7 +25,7 @@ socket_t establish_connection_server(socket_t serverSocket, struct sockaddr *cli
 	while(listen(serverSocket, 5) == SOCKET_ERROR)
 	{
 	        print_error("Connect was pending too long or connection failed. waiting");
-		Sleep(2000);
+		os_sleep(2*_TO_SEC);
 	}
   	socket_t sock = accept(serverSocket,client, &len);
 	  if (sock == INVALID_SOCKET) {

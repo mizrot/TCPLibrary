@@ -38,10 +38,22 @@ typedef int socket_t;
 #define print_error(msg) perror(msg)
 #endif
 
+#ifdef _WIN32
+#define _TO_SEC 1000
+#else
+#define _TO_SEC 1
+#endif
+
+#ifdef _WIN32
+#define os_sleep(s) Sleep(s)
+#else
+#define os_sleep(s) sleep(s)
+#endif
+
 #ifdef _WIN32 
-#define PLATFORM WINDOWS
+#define PLATFORM_WINDOWS
 #else 
-#define PLATFORM LINUX
+#define PLATFORM_LINUX
 #endif
 
 #endif

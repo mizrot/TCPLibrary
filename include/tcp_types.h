@@ -2,56 +2,68 @@
 #define TCP_TYPES_H
 
 #include"platform.h"
+#include"tcp_threads.h"
 #include<stdatomic.h>
-#include<pthread.h>
 
 #define MAX_MSG_SIZE 1000
 typedef struct {
    socket_t socket;
    char *string; 
    unsigned int len;
-} message_t;
+} queue_message_data_t;
 
-struct stack_data{
-    struct stack_data *next;
-    message_t msg;
-};
+typedef struct {
+   char *message;
+   size_t msg_len;
+   
+} queue_buffer_t; 
 
-struct stack_t{
-  struct stack_data *top;
-  pthread_mutex_t mutex;
-};
+typedef struct {
+   worker_t worker;
+   void *arg;
+} queue_job_t;
 
-struct sock_stack_s {
-  struct stack_t *stack;
-  socket_t socket;
-};
+typedef union {
+   queue_message_data_t msg;
+   queue_buffer_t buff;
+   queue_job_t job;
+} queue_data_t;
 
-struct socket_addr_stack_s {
-  struct sock_stack_s sock_stack;
-  socket_t socket;
-  struct sockaddr_in addr;
-  atomic_bool *should_close;
-};
+typedef enum {
+    QUEUE_MSG,
+    QUEUE_BUFFER,
+    QUEUE_JOB
+} queue_data_type_t;
 
-struct stack_callback_s {
-  struct stack_t *stack;
-  atomic_bool *should_close;
-  void (*ptr)(char *);
-};
-struct tcp_ipv4{
+typedef struct {
+   queue_data_t *storage;
+   queue_data_type_t type;
+   int front;
+   int rear;
+   int size;
+   os_mutex_t mutex;
+   os_condition_t cond;
+}queue_t;
+
+
+typedef struct {
+  os_thread_t **threads;
+  queue_t jobs;
+  volatile int num_threads_alive;
+  volatile int num_threads_working;
+  volatile int on_hold;
+  volatile int keepalive;
+  volatile int num_threads;
+  os_mutex_t count_lock;
+  os_condition_t all_idle;
+} thpool_t;
+
+typedef struct {
 	socket_t socket;
 	struct sockaddr_in addr;
-	atomic_bool should_close;
+	atomic_bool running;
 	unsigned long int id;	
-	pthread_t process_connection;
-	pthread_t process_data;
-  struct socket_addr_stack_s process_connection_args;
-  struct sock_stack_s process_socket_args;
-  struct stack_callback_s process_data_args;
-	bool is_server;
-};
-
+}tcp_ipv4;
 
 #endif
 

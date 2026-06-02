@@ -1,7 +1,7 @@
 #include"message.h"
 #include<string.h>
 
-int pack_msg(const char * const string, socket_t dest, message_t *msg){
+int pack_msg(const char * const string, socket_t dest, queue_message_data_t *msg){
    if (!msg || !string || dest == INVALID_SOCKET){
 	return -1;
    }
@@ -15,7 +15,7 @@ int pack_msg(const char * const string, socket_t dest, message_t *msg){
    return 0;
 }
 
-int unpack_msg(message_t *msg, char *buff, size_t buff_size){
+int unpack_msg(queue_message_data_t *msg, char *buff, size_t buff_size){
    if (!buff || !msg || msg->socket == INVALID_SOCKET){
 	return -1;
    }
