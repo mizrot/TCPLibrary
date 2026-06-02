@@ -94,7 +94,7 @@ void reset_condition(os_condition_t *cond){
 void shutdown_condition(os_condition_t *cond) {
   lock_mutex(&cond->mutex);
   cond->v = -1;
-  WakeConditionVariable(&(cond->cond));
+  WakeAllConditionVariable(&(cond->cond));
   unlock_mutex(&cond->mutex);
 }
 
