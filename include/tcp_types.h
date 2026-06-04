@@ -4,6 +4,7 @@
 #include"platform.h"
 #include"tcp_threads.h"
 #include<stdatomic.h>
+#include<inttypes.h>
 
 #define MAX_MSG_SIZE 1000
 typedef struct {
@@ -52,11 +53,24 @@ typedef struct {
   volatile int num_threads_alive;
   volatile int num_threads_working;
   volatile int on_hold;
-  volatile int keepalive;
   volatile int num_threads;
   os_mutex_t count_lock;
   os_condition_t all_idle;
 } thpool_t;
+
+typedef uint32_t node_id_t;
+
+typedef struct node_t{
+  node_id_t key;
+  socket_t val;
+  struct node_t *next;
+} node_t;
+
+typedef struct {
+ node_t **arr;
+ os_mutex_t mutex;
+ size_t num, capacity;
+}htable_t;
 
 typedef struct {
 	socket_t socket;

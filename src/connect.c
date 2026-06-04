@@ -29,7 +29,7 @@ socket_t establish_connection_server(socket_t serverSocket, struct sockaddr *cli
 	}
   	socket_t sock = accept(serverSocket,client, &len);
 	  if (sock == INVALID_SOCKET) {
-	    print_error("Socket busy or not responding. ");
+	    print_error("Socket busy or not responding");
 	    return INVALID_SOCKET;
 	  }
   return sock;

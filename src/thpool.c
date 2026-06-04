@@ -5,7 +5,7 @@
 #include<stdlib.h>
 #include<time.h>
 
-#define MAX_JOBS 20
+#define MAX_JOBS 1024
 
 void* _thread_job(void *in){
 	thpool_t *pool = (thpool_t *)(in);
@@ -14,34 +14,30 @@ void* _thread_job(void *in){
 	pool->num_threads_alive += 1;
 	unlock_mutex(&pool->count_lock);
 
-	while(pool->keepalive){
+	while(1){
 
 		if (sleep_condition(&pool->jobs.cond) == 0){
 			break;
 		}
 
-		if (pool->keepalive){
+		lock_mutex(&pool->count_lock);
+		pool->num_threads_working++;
+		unlock_mutex(&pool->count_lock);
 
-			lock_mutex(&pool->count_lock);
-			pool->num_threads_working++;
-			unlock_mutex(&pool->count_lock);
+		/* Read job from queue and execute it */
+		queue_job_t job;
 
-			/* Read job from queue and execute it */
-			queue_job_t job;
-
-			if (delete_queue(&pool->jobs,(queue_data_t*)&job))
-			{
-				job.worker(job.arg);
-			}
-
-			lock_mutex(&pool->count_lock);
-			pool->num_threads_working--;
-			if (!pool->num_threads_working) {
-				wake_condition(&pool->all_idle);
-			}
-			unlock_mutex(&pool->count_lock);
-
+		if (delete_queue(&pool->jobs,(queue_data_t*)&job))
+		{
+			job.worker(job.arg);
 		}
+
+		lock_mutex(&pool->count_lock);
+		pool->num_threads_working--;
+		if (!pool->num_threads_working) {
+			wake_condition(&pool->all_idle);
+		}
+		unlock_mutex(&pool->count_lock);
 	}
 	lock_mutex(&pool->count_lock);
 	pool->num_threads_alive --;
@@ -50,7 +46,7 @@ void* _thread_job(void *in){
 	return NULL;
 
 }
-thpool_t* thpool_init(int num_threads){
+thpool_t* init_thpool(int num_threads){
 	if (num_threads < 0){
 		num_threads = 0;
 	}
@@ -64,7 +60,7 @@ thpool_t* thpool_init(int num_threads){
 	pool->num_threads_alive   = 0;
 	pool->num_threads_working = 0;
 	pool->on_hold   = 0;
-	pool->keepalive = 1;
+	pool->num_threads = num_threads;
 
 	if (!init_queue(&pool->jobs, MAX_JOBS, QUEUE_JOB)){
 		print_error("thpool_init(): Could not allocate memory for job queue ");
@@ -89,7 +85,7 @@ thpool_t* thpool_init(int num_threads){
 	return pool;
 }
 
-void thpool_add_work(thpool_t *pool, worker_t worker, void *arg){
+void add_thpool(thpool_t *pool, worker_t worker, void *arg){
    queue_job_t newjob;
 
    newjob.worker = worker;
@@ -98,32 +94,29 @@ void thpool_add_work(thpool_t *pool, worker_t worker, void *arg){
    insert_queue(&(pool->jobs), (queue_data_t)newjob);
 }
 
-void thpool_wait(thpool_t *pool){
+void wait_thpool(thpool_t *pool){
    while ( pool->jobs.front == -1 || pool->num_threads_working){
       if (sleep_condition(&(pool->all_idle)) == 0)
 	      break;
    }
 }
 
-void thpool_destroy(thpool_t *pool){
+void destroy_thpool(thpool_t *pool){
    if (pool == NULL)
 	   return;
    volatile int threads_total = pool->num_threads_alive;
-
-   pool->keepalive = 0;
 
   double TIMEOUT = 1.0;
   time_t start, end;
   double tpassed = 0.0;
   time(&start);
   while (tpassed < TIMEOUT && pool->num_threads_alive){
-	wake_all_condition(&pool->jobs.cond, pool->num_threads_alive);
+	shutdown_condition(&(pool->jobs.cond));
+	shutdown_condition(&(pool->all_idle));
 	os_sleep(1*_TO_SEC);
 	time(&end);
 	tpassed = difftime(end, start);
   }
-
-  shutdown_condition(&pool->all_idle);
 
   for (int n = 0; n < threads_total; n++){
 	join_thread(pool->threads[n], NULL);
