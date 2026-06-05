@@ -3,7 +3,6 @@
 #include "data.h"
 #include "htable.h"
 #include "ipv4socket.h"
-#include "message.h"
 #include "platform.h"
 #include "queue.h"
 #include "ringbuf.h"
@@ -134,7 +133,7 @@ int tcp_subscribe(tcp_ipv4 *host, int threads, usercallback_t callback) {
   return 0;
 }
 
-void tcp_create_client( tcp_ipv4 *host, const char *ip, int port) {
+void tcp_create_client(tcp_ipv4 *host, const char *ip, int port) {
   host->socket = create_empty_socket();
   host->addr = create_ipv4_server(ip, port);
   host->running = false;
@@ -161,9 +160,8 @@ int tcp_shutdown(tcp_ipv4 *target) {
     close_socket(target->socket);
     free(target->th_con);
     free(target->th_data);
-  }
-  else{
-     close_socket(target->socket);
+  } else {
+    close_socket(target->socket);
   }
   return 0;
 }

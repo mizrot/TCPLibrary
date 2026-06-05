@@ -1,7 +1,7 @@
 #ifndef TCP_RINGBUF_H
 #define TCP_RINGBUF_H
 
-#include"tcp_types.h"
+#include "tcp_types.h"
 
 int init_ringbuf(ringbuf_t *, int);
 void write_ringbuf(ringbuf_t *, char *, int);

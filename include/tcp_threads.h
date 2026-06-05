@@ -1,66 +1,55 @@
 #ifndef TCP_THREADS_H
 #define TCP_THREADS_H
 
-
-
-#include"platform.h"
-
-
+#include "platform.h"
 
 #ifdef PLATFORM_WINDOWS
-#include<windows.h>
+#include <windows.h>
 #endif
 
 #ifdef PLATFORM_LINUX
-#include<pthread.h>
+#include <pthread.h>
 #endif
 
-
-
-
 #ifdef PLATFORM_WINDOWS
-typedef void* (WINAPI *worker_t)(LPVOID);
+typedef void *(WINAPI *worker_t)(LPVOID);
 #endif
 
 #ifdef PLATFORM_LINUX
-typedef void*(*worker_t)(void*) ;
+typedef void *(*worker_t)(void *);
 #endif
 
+typedef void *thread_ret_t;
 
-
-typedef void* thread_ret_t;
-
-struct thread_data{
- worker_t func;
- void *args;
- thread_ret_t *result;
+struct thread_data {
+  worker_t func;
+  void *args;
+  thread_ret_t *result;
 };
 
 #ifdef PLATFORM_WINDOWS
 
-typedef struct{
-   HANDLE handle;
-   struct thread_data *data;
-}os_thread_t;
+typedef struct {
+  HANDLE handle;
+  struct thread_data *data;
+} os_thread_t;
 
 #endif
 
 #ifdef PLATFORM_LINUX
 
-typedef struct{
-    pthread_t handle;
-    struct thread_data *data;
-}os_thread_t;
+typedef struct {
+  pthread_t handle;
+  struct thread_data *data;
+} os_thread_t;
 
 #endif
-
-
 
 #ifdef PLATFORM_WINDOWS
 
 typedef CRITICAL_SECTION os_mutex_t;
 
-#endif 
+#endif
 
 #ifdef PLATFORM_LINUX
 
@@ -68,24 +57,23 @@ typedef pthread_mutex_t os_mutex_t;
 
 #endif
 
-
 #ifdef PLATFORM_WINDOWS
 
 typedef struct {
-	os_mutex_t mutex;
-	CONDITION_VARIABLE cond;
-	int v;
-}os_condition_t;
+  os_mutex_t mutex;
+  CONDITION_VARIABLE cond;
+  int v;
+} os_condition_t;
 
 #endif
 
-#ifdef PLATFORM_LINUX 
+#ifdef PLATFORM_LINUX
 
-typedef struct{
-	os_mutex_t mutex;
-	pthread_cond_t cond;
-	int v;
-}os_condition_t;
+typedef struct {
+  os_mutex_t mutex;
+  pthread_cond_t cond;
+  int v;
+} os_condition_t;
 
 #endif
 
@@ -103,5 +91,4 @@ void reset_condition(os_condition_t *);
 void shutdown_condition(os_condition_t *);
 void destroy_condition(os_condition_t *);
 
-
-#endif 
+#endif
