@@ -28,7 +28,7 @@ typedef void*(*worker_t)(void*) ;
 
 
 
-typedef int thread_ret_t;
+typedef void* thread_ret_t;
 
 struct thread_data{
  worker_t func;

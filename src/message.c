@@ -1,5 +1,7 @@
 #include"message.h"
 #include<string.h>
+#include<inttypes.h>
+#include<stdlib.h>
 
 int pack_msg(const char * const string, socket_t dest, queue_message_data_t *msg){
    if (!msg || !string || dest == INVALID_SOCKET){
@@ -26,3 +28,4 @@ int unpack_msg(queue_message_data_t *msg, char *buff, size_t buff_size){
    buff[msg->len] = '\0';
    return 0;
 }
+

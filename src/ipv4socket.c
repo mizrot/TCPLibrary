@@ -37,10 +37,10 @@ struct sockaddr_in create_ipv4_server(const char *str, int port) {
   return addr;
 }
 
-int bind_ipv4_address(socket_t server, const struct sockaddr *addr,
+int bind_ipv4_address(socket_t server, const struct sockaddr_in *addr,
                       socklen_t len) {
 
-  if (bind(server, addr, len) == SOCKET_ERROR) {
+  if (bind(server, (struct sockaddr *)addr, len) == SOCKET_ERROR) {
     print_error("Socket bind failed");
     return -1;
   }
@@ -48,4 +48,3 @@ int bind_ipv4_address(socket_t server, const struct sockaddr *addr,
   return 0;
 }
 
-void close_socket(socket_t socket) { close(socket); }

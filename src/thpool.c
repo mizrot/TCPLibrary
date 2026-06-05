@@ -40,21 +40,16 @@ void* _thread_job(void *in){
 		unlock_mutex(&pool->count_lock);
 	}
 	lock_mutex(&pool->count_lock);
-	pool->num_threads_alive --;
+	pool->num_threads_alive--;
 	unlock_mutex(&pool->count_lock);
 
 	return NULL;
 
 }
-thpool_t* init_thpool(int num_threads){
+
+int init_thpool(thpool_t *pool, int num_threads){
 	if (num_threads < 0){
 		num_threads = 0;
-	}
-	thpool_t* pool;
-	pool = malloc(sizeof(thpool_t));
-	if (pool == NULL){
-		print_error("thpool_init(): Could not allocate memory for thread pool\n");
-		return NULL;
 	}
 
 	pool->num_threads_alive   = 0;
@@ -65,14 +60,14 @@ thpool_t* init_thpool(int num_threads){
 	if (!init_queue(&pool->jobs, MAX_JOBS, QUEUE_JOB)){
 		print_error("thpool_init(): Could not allocate memory for job queue ");
 		destroy_queue(&(pool->jobs));
-		return NULL;
+		return -1;
 	}
 	pool->threads = (os_thread_t**)malloc(num_threads*sizeof(os_thread_t*));
 	if (pool->threads == NULL){
 		print_error("thpool_init(): Could not allocate memory for threads\n");
 		destroy_queue(&pool->jobs);
 		free(pool);
-		return NULL;
+		return -1;
 	}
 	init_mutex(&(pool->count_lock));
 	init_condition(&(pool->all_idle), 0);
@@ -81,8 +76,7 @@ thpool_t* init_thpool(int num_threads){
 	    pool->threads[n] = malloc(sizeof(os_thread_t));
 	    create_thread(pool->threads[n],_thread_job,pool);
 	}	
-
-	return pool;
+	return 0;
 }
 
 void add_thpool(thpool_t *pool, worker_t worker, void *arg){
@@ -129,7 +123,6 @@ void destroy_thpool(thpool_t *pool){
 	free(pool->threads[i]);
   }
   free(pool->threads);
-  free(pool);
 }
 
 int thpool_num_threads_working(thpool_t *pool){

@@ -6,18 +6,14 @@
 #include<stdatomic.h>
 #include<inttypes.h>
 
-#define MAX_MSG_SIZE 1000
+#define MAX_RECV_SIZE 1024
+#define RECV_RINGBUF_SIZE ((MAX_RECV_SIZE)*10) 
+
 typedef struct {
    socket_t socket;
    char *string; 
-   unsigned int len;
+   uint32_t len;
 } queue_message_data_t;
-
-typedef struct {
-   char *message;
-   size_t msg_len;
-   
-} queue_buffer_t; 
 
 typedef struct {
    worker_t worker;
@@ -26,13 +22,11 @@ typedef struct {
 
 typedef union {
    queue_message_data_t msg;
-   queue_buffer_t buff;
    queue_job_t job;
 } queue_data_t;
 
 typedef enum {
     QUEUE_MSG,
-    QUEUE_BUFFER,
     QUEUE_JOB
 } queue_data_type_t;
 
@@ -45,6 +39,14 @@ typedef struct {
    os_mutex_t mutex;
    os_condition_t cond;
 }queue_t;
+
+typedef struct{
+    char *storage;
+    int front;
+    int rear;
+    int size;
+    int count;
+}ringbuf_t;
 
 
 typedef struct {
@@ -60,9 +62,17 @@ typedef struct {
 
 typedef uint32_t node_id_t;
 
+typedef struct tcp_ipv4 tcp_ipv4; 
+
+typedef struct{
+  socket_t sock;
+  ringbuf_t *recv_buf;
+  tcp_ipv4 *host;
+} client_data_t;
+
 typedef struct node_t{
   node_id_t key;
-  socket_t val;
+  client_data_t val;
   struct node_t *next;
 } node_t;
 
@@ -73,11 +83,47 @@ typedef struct {
 }htable_t;
 
 typedef struct {
+  htable_t *clients;
+  socket_t sender;
+  socket_t host;
+  char *msg;
+} tcp_event_ctx_t;
+
+typedef void (*usercallback_t)(tcp_event_ctx_t*);
+
+struct process_data_ctx {
+  usercallback_t func;
+  tcp_ipv4 *host;
+};
+
+struct process_connection_ctx {
+  tcp_ipv4 *host;
+  int threads;
+};
+typedef struct {
+   struct process_connection_ctx ctx;
+   os_thread_t thread;
+}process_connection_t;
+
+typedef struct {
+	   struct process_data_ctx ctx;
+	   os_thread_t thread;
+	}process_data_t;
+
+
+typedef struct tcp_ipv4{
 	socket_t socket;
 	struct sockaddr_in addr;
+	htable_t clients;
+	thpool_t pool;
+	queue_t messages;
+	process_connection_t *th_con;
+	process_data_t *th_data;
+
+	
 	atomic_bool running;
-	unsigned long int id;	
 }tcp_ipv4;
+
 
 #endif
 

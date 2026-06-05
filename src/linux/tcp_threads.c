@@ -54,10 +54,10 @@ int sleep_condition(os_condition_t *cond) {
 }
 
 void wake_condition(os_condition_t *cond) {
-  lock_mutex(&cond->mutex);
+  lock_mutex(&(cond->mutex));
   cond->v++;
-  pthread_cond_signal(&cond->cond);
-  unlock_mutex(&cond->mutex);
+  pthread_cond_signal(&(cond->cond));
+  unlock_mutex(&(cond->mutex));
 }
 
 void wake_all_condition(os_condition_t *cond, size_t n) {

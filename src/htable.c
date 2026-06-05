@@ -1,5 +1,7 @@
 #include "htable.h"
 #include "tcp_types.h"
+#include "platform.h"
+#include "ringbuf.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,13 +38,13 @@ int hashFunction(htable_t *mp, node_id_t id) {
   return bucketIndex;
 }
 
-void insert_htable(htable_t *mp, node_id_t id, socket_t sock) {
+void insert_htable(htable_t *mp, node_id_t id, client_data_t data) {
   lock_mutex(&(mp->mutex));
   int bucketIndex = hashFunction(mp, id);
 
   node_t *peer = malloc(sizeof(node_t));
   peer->key = id;
-  peer->val = sock;
+  peer->val = data;
 
   if (mp->arr[bucketIndex] == NULL) {
     mp->arr[bucketIndex] = peer;
@@ -75,15 +77,30 @@ void delete_htable(htable_t *mp, node_id_t id) {
   unlock_mutex(&(mp->mutex));
 }
 
-socket_t search_htable(htable_t *mp, node_id_t id) {
+void drain_htable(htable_t *mp){
+   for (size_t i = 0; i < mp->capacity; i++){
+	node_t *cur = mp->arr[i];
+	while (cur != NULL){
+		node_t *next = cur->next;
+		close_socket(cur->val.sock);
+		destroy_ringbuf(cur->val.recv_buf);
+		free(cur->val.recv_buf);
+		free(cur);
+		cur = next;
+	}
+	mp->arr[i] = NULL;
+   }
+}
+
+node_t* search_htable(htable_t *mp, node_id_t id) {
   int bucketIndex = hashFunction(mp, id);
   node_t *curr = mp->arr[bucketIndex];
   while (curr != NULL) {
 
     if (curr->key == id) {
-      return curr->val;
+      return curr;
     }
     curr = curr->next;
   }
-  return INVALID_SOCKET;
+  return NULL;
 }

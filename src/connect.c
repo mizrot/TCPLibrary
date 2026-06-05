@@ -1,36 +1,39 @@
-#include"connect.h"
+#include "connect.h"
 
-int establish_connection_client(socket_t clientSocket, struct sockaddr *server, socklen_t len){
+int establish_connection_client(socket_t clientSocket, struct sockaddr_in *server,
+                                socklen_t len) {
 
+  const unsigned int MAX_TIMEOUT = 8;
+  unsigned int timeout = 0;
+  while (timeout <= MAX_TIMEOUT &&
+         connect(clientSocket, (struct sockaddr*)server, len) == SOCKET_ERROR) {
+    print_error("Connect failed. waiting");
+    os_sleep(2 * _TO_SEC);
+    timeout += 2 * _TO_SEC;
+  }
+  if (timeout == MAX_TIMEOUT) {
+    print_error("Maximum timeout reached");
+    return -1;
+  }
 
-  	const unsigned int MAX_TIMEOUT = 8;
-	unsigned int timeout = 0;
-   	while(timeout <= MAX_TIMEOUT && connect(clientSocket , server , len) == SOCKET_ERROR)
-  	{
-    		print_error("Connect failed. waiting");
-		os_sleep(2*_TO_SEC);
-		timeout += 2*_TO_SEC;
-  	}      
-	if (timeout == MAX_TIMEOUT){
-		print_error("Maximum timeout reached");
-		return -1;
-	}
-
-	return 1;
-	
+  return 0;
 }
 
-socket_t establish_connection_server(socket_t serverSocket, struct sockaddr *client, socklen_t len){
+socket_t establish_connection_server(socket_t serverSocket,
+                                     struct sockaddr_in*client, socklen_t len) {
 
-	while(listen(serverSocket, 5) == SOCKET_ERROR)
-	{
-	        print_error("Connect was pending too long or connection failed. waiting");
-		os_sleep(2*_TO_SEC);
-	}
-  	socket_t sock = accept(serverSocket,client, &len);
-	  if (sock == INVALID_SOCKET) {
-	    print_error("Socket busy or not responding");
-	    return INVALID_SOCKET;
-	  }
+  int invalid_connection = 0;
+  while (invalid_connection < 5 && listen(serverSocket, 5) == SOCKET_ERROR) {
+    invalid_connection += 1;
+  }
+  if (invalid_connection >= 5){
+	print_error("Too many invalid sockets");
+	return INVALID_SOCKET;
+  }
+  socket_t sock = accept(serverSocket, (struct sockaddr *)client, &len);
+  if (sock == INVALID_SOCKET) {
+    print_error("Socket busy or not responding");
+    return INVALID_SOCKET;
+  }
   return sock;
 }

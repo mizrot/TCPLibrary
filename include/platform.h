@@ -21,9 +21,9 @@ typedef int socket_t;
 #endif
 
 #ifdef _WIN32
-#define close(socket) closesocket(socket)
+#define close_socket(socket) closesocket(socket)
 #else
-#define close(socket) close(socket)
+#define close_socket(socket) close(socket)
 #endif
 
 #ifndef _WIN32
