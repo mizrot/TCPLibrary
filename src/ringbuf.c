@@ -114,5 +114,7 @@ uint32_t readable_ringbuf(ringbuf_t *ringbuf) {
   return (ringbuf->rear - ringbuf->front + ringbuf->size) % ringbuf->size;
 }
 
-void destroy_ringbuf(ringbuf_t *ringbuf) { free(ringbuf->storage); }
+void destroy_ringbuf(ringbuf_t *ringbuf) { 
+	free(ringbuf->storage); 
+}
 

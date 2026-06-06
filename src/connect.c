@@ -40,7 +40,7 @@ socket_t establish_connection_server(socket_t serverSocket,
 
   if (invalid_connection >= 5) {
 
-    print_error("Too many invalid sockets");
+    print_error("Too many invalid attempts");
     return INVALID_SOCKET;
 
   }

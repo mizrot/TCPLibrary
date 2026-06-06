@@ -21,14 +21,12 @@ void tcp_create_host(tcp_ipv4 *host, const char *ip, int port) {
   bind_ipv4_address(host->socket, (&host->addr), sizeof(host->addr));
   init_htable((&host->clients));
   init_queue((&host->messages), 100, QUEUE_MSG);
-
 }
 
 void *_thread_process_socket(void *ptr) {
 
   client_data_t client = ((node_t *)ptr)->val;
 
-  init_ringbuf(client.recv_buf, RECV_RINGBUF_SIZE);
   tcp_ipv4 *host = client.host;
 
   char tmp[MAX_RECV_SIZE];
@@ -53,19 +51,15 @@ void *_thread_process_socket(void *ptr) {
       skip_ringbuf(client.recv_buf, 4);
       queue_message_data_t msg;
 
-      msg.string = malloc(sizeof(char) * len);
+      msg.string = malloc(sizeof(char) * len + 1);
+      msg.string[len] = '\0';
       msg.socket = client.sock;
       msg.len = len;
 
       read_ringbuf(client.recv_buf, msg.string, len);
       insert_queue(&(host->messages), ((queue_data_t)msg));
-
     }
-
   }
-
-  free(client.recv_buf);
-
   return NULL;
 }
 
@@ -88,6 +82,8 @@ void *_thread_process_connection(void *ptr) {
     }
 
     ringbuf_t *rb = malloc(sizeof(ringbuf_t));
+    init_ringbuf(rb, RECV_RINGBUF_SIZE);
+
     client_data_t client = {.sock = client_sock, .recv_buf = rb, .host = host};
     insert_htable(&(host->clients), new_client_addr.sin_addr.s_addr, client);
 
@@ -96,11 +92,10 @@ void *_thread_process_connection(void *ptr) {
         search_htable(&(host->clients), new_client_addr.sin_addr.s_addr));
   }
 
-  drain_htable(&host->clients);
+  destroy_htable(&host->clients);
   destroy_thpool(&pool);
 
   return NULL;
-
 }
 
 void *_thread_process_data(void *ptr) {
@@ -114,7 +109,9 @@ void *_thread_process_data(void *ptr) {
     sleep_condition(&(host->messages.cond));
 
     queue_message_data_t msg;
-    delete_queue(&(host->messages), (queue_data_t *)&msg);
+    if (!delete_queue(&(host->messages), (queue_data_t *)&msg)) {
+      continue;
+    }
 
     tcp_event_ctx_t ctx = {.clients = &host->clients,
                            .host = host->socket,
@@ -123,8 +120,9 @@ void *_thread_process_data(void *ptr) {
 
     func(&ctx);
     free(msg.string);
-
   }
+
+  destroy_queue(&host->messages);
 
   return NULL;
 }
@@ -138,7 +136,6 @@ int tcp_subscribe(tcp_ipv4 *host, int threads, usercallback_t callback) {
 
     print_error("Couldn't allocate memory for thread ");
     return -1;
-
   }
 
   host->th_data = malloc(sizeof(process_data_t));
@@ -147,7 +144,6 @@ int tcp_subscribe(tcp_ipv4 *host, int threads, usercallback_t callback) {
 
     print_error("Couldn't allocate memory for thread ");
     return -1;
-
   }
 
   host->th_con->ctx =
@@ -168,7 +164,6 @@ void tcp_create_client(tcp_ipv4 *host, const char *ip, int port) {
   host->socket = create_empty_socket();
   host->addr = create_ipv4_server(ip, port);
   host->running = false;
-
 }
 
 int tcp_connect(tcp_ipv4 *reciever) {
@@ -176,7 +171,6 @@ int tcp_connect(tcp_ipv4 *reciever) {
   if (establish_connection_client(reciever->socket, (&reciever->addr),
                                   sizeof(reciever->addr))) {
     return -1;
-
   }
 
   return 0;
@@ -187,7 +181,6 @@ int tcp_send(tcp_ipv4 *reciever, char *msg) {
   if (send_message(reciever->socket, msg)) {
 
     return -1;
-
   }
 
   return 0;
@@ -198,14 +191,18 @@ int tcp_shutdown(tcp_ipv4 *target) {
   if (atomic_load(&target->running) == true) {
 
     atomic_store((&target->running), false);
+    wake_condition(&target->messages.cond);
     close_socket(target->socket);
+
+    join_thread(&(target->th_data->thread), NULL);
+    join_thread(&(target->th_con->thread), NULL);
+
     free(target->th_con);
     free(target->th_data);
 
   } else {
 
     close_socket(target->socket);
-
   }
 
   return 0;

@@ -5,7 +5,8 @@
 int init_htable(htable_t *);
 void insert_htable(htable_t *, node_id_t, client_data_t);
 void delete_htable(htable_t *, node_id_t);
-void drain_htable(htable_t *);
+void drain_htable(htable_t *mp, void (*callback)(node_t *));
+void destroy_htable(htable_t *mp);
 node_t *search_htable(htable_t *, node_id_t);
 
 #endif

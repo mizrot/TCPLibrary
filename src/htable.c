@@ -19,6 +19,9 @@ int init_htable(htable_t *mp) {
     return -1;
   }
 
+  for (size_t i = 0; i < mp->capacity; i++){
+	mp->arr[i] = NULL;
+  }
   return 0;
 }
 
@@ -51,6 +54,7 @@ void insert_htable(htable_t *mp, node_id_t id, client_data_t data) {
   node_t *peer = malloc(sizeof(node_t));
   peer->key = id;
   peer->val = data;
+  peer->next = NULL;
 
   if (mp->arr[bucketIndex] == NULL) {
 
@@ -94,7 +98,8 @@ void delete_htable(htable_t *mp, node_id_t id) {
   unlock_mutex(&(mp->mutex));
 }
 
-void drain_htable(htable_t *mp) {
+void drain_htable(htable_t *mp, void (*callback)(node_t *)) {
+   lock_mutex(&(mp->mutex));
 
   for (size_t i = 0; i < mp->capacity; i++) {
 
@@ -103,15 +108,13 @@ void drain_htable(htable_t *mp) {
     while (cur != NULL) {
 
       node_t *next = cur->next;
-      close_socket(cur->val.sock);
-      destroy_ringbuf(cur->val.recv_buf);
-      free(cur->val.recv_buf);
-      free(cur);
+      callback(cur);
       cur = next;
     }
 
     mp->arr[i] = NULL;
   }
+  unlock_mutex(&(mp->mutex));
 }
 
 node_t *search_htable(htable_t *mp, node_id_t id) {
@@ -129,4 +132,16 @@ node_t *search_htable(htable_t *mp, node_id_t id) {
   }
 
   return NULL;
+}
+
+  void destroy_connection(node_t * node) {
+    close_socket(node->val.sock);
+    destroy_ringbuf(node->val.recv_buf);
+    free(node->val.recv_buf);
+    free(node);
+  }
+
+void destroy_htable(htable_t *mp){
+   drain_htable(mp, destroy_connection);
+   free(mp->arr);
 }

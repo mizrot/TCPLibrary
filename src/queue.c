@@ -77,7 +77,8 @@ bool delete_queue(queue_t *queue, queue_data_t *out) {
   lock_mutex(&queue->mutex);
 
   if (queue->front == -1) {
-
+  
+    unlock_mutex(&queue->mutex);
     return false;
 
   }
