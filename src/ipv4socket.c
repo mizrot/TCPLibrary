@@ -57,10 +57,26 @@ struct sockaddr_in create_ipv4_server(const char *str, int port) {
 int bind_ipv4_address(socket_t server, const struct sockaddr_in *addr,
                       socklen_t len) {
 
+  
   if (bind(server, (struct sockaddr *)addr, len) == SOCKET_ERROR) {
 
     print_error("Socket bind failed");
     return -1;
+
+  }
+
+  int invalid_connection = 0;
+
+  while (invalid_connection < 5 && listen(server, 5) == SOCKET_ERROR) {
+
+    invalid_connection += 1;
+
+  }
+
+  if (invalid_connection >= 5) {
+
+    print_error("Too many invalid attempts");
+    return INVALID_SOCKET;
 
   }
 

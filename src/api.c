@@ -35,7 +35,7 @@ void *_thread_process_socket(void *ptr) {
 
     int n = receive_message(client.sock, tmp);
     if (n <= 0)
-      break; 
+      break;
 
     write_ringbuf(client.recv_buf, tmp, n);
 
@@ -191,11 +191,12 @@ int tcp_shutdown(tcp_ipv4 *target) {
   if (atomic_load(&target->running) == true) {
 
     atomic_store((&target->running), false);
-    wake_condition(&target->messages.cond);
+    shutdown(target->socket, SHUT_RDWR);
     close_socket(target->socket);
+    wake_condition(&target->messages.cond);
 
-    join_thread(&(target->th_data->thread), NULL);
     join_thread(&(target->th_con->thread), NULL);
+    join_thread(&(target->th_data->thread), NULL);
 
     free(target->th_con);
     free(target->th_data);
@@ -203,6 +204,7 @@ int tcp_shutdown(tcp_ipv4 *target) {
   } else {
 
     close_socket(target->socket);
+
   }
 
   return 0;

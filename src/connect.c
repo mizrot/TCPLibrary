@@ -30,21 +30,6 @@ socket_t establish_connection_server(socket_t serverSocket,
                                      struct sockaddr_in *client,
                                      socklen_t len) {
 
-  int invalid_connection = 0;
-
-  while (invalid_connection < 5 && listen(serverSocket, 5) == SOCKET_ERROR) {
-
-    invalid_connection += 1;
-
-  }
-
-  if (invalid_connection >= 5) {
-
-    print_error("Too many invalid attempts");
-    return INVALID_SOCKET;
-
-  }
-
   socket_t sock = accept(serverSocket, (struct sockaddr *)client, &len);
 
   if (sock == INVALID_SOCKET) {
