@@ -35,7 +35,7 @@ void *_thread_process_socket(void *ptr) {
 
     int n = receive_message(client.sock, tmp);
     if (n <= 0)
-      break; /* closed or error */
+      break; 
 
     write_ringbuf(client.recv_buf, tmp, n);
 
