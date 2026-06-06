@@ -203,8 +203,8 @@ int tcp_shutdown(tcp_ipv4 *target) {
 
   } else {
 
+    shutdown(target->socket, SHUT_RDWR);
     close_socket(target->socket);
-
   }
 
   return 0;
