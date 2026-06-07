@@ -78,10 +78,6 @@
           font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="600" fill="#d8d8d8">Listening socket</text>
   </g>
 
-  <!-- spawn thread label -->
-  <text x="262" y="310" text-anchor="start" dominant-baseline="auto"
-        font-family="Arial,Helvetica,sans-serif" font-size="12" fill="rgb(154,154,154)">spawn thread per connection</text>
-
   <!-- ═══════════════════════════════════════════════════
        ROW 4: Worker threads
        Worker A: x=78,  y=341, w=145, h=49 → cx=150.5, cy=365.5
@@ -143,15 +139,11 @@
   <path d="M 112.5 460 C 132 424, 142 414, 150.5 390"
         marker-end="url(#arrow)"
         fill="none" stroke="rgb(154,154,154)" stroke-width="1.6" stroke-dasharray="6,6"/>
-  <text x="66" y="422" text-anchor="start" dominant-baseline="auto"
-        font-family="Arial,Helvetica,sans-serif" font-size="12" fill="rgb(154,154,154)">recv()</text>
 
   <!-- Worker A → stack -->
   <path d="M 150.5 390 C 188 419, 246 449, 270 462"
         marker-end="url(#arrow)"
         fill="none" stroke="rgb(154,154,154)" stroke-width="1.6"/>
-  <text x="204" y="410" text-anchor="start" dominant-baseline="auto"
-        font-family="Arial,Helvetica,sans-serif" font-size="12" fill="rgb(154,154,154)">push(msg)</text>
 
   <!-- Worker B → stack -->
   <path d="M 348.5 390 L 348.5 462"
@@ -185,8 +177,6 @@
   <path d="M 629 178 Q 680 420, 430 480"
         marker-end="url(#arrow)"
         fill="none" stroke="rgb(154,154,154)" stroke-width="1.6"/>
-  <text x="648" y="316" text-anchor="start" dominant-baseline="auto"
-        font-family="Arial,Helvetica,sans-serif" font-size="12" fill="rgb(154,154,154)">pop()</text>
 
   <!-- ═══════════════════════════════════════════════════
        ROW 6: User callback
