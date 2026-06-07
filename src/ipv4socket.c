@@ -76,7 +76,7 @@ int bind_ipv4_address(socket_t server, const struct sockaddr_in *addr,
   if (invalid_connection >= 5) {
 
     print_error("Too many invalid attempts");
-    return INVALID_SOCKET;
+    return -1;
 
   }
 
