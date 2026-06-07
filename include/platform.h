@@ -30,6 +30,12 @@ typedef int socket_t;
 #define SOCKET_ERROR (-1)
 #endif
 
+#ifdef _WIN32
+#define SHUTDOWN SD_BOTH
+#else
+#define SHUTDOWN SHUT_RDWR
+#endif
+
 // Error handle
 #ifdef _WIN32
 #define print_error(msg)                                                       \

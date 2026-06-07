@@ -63,6 +63,7 @@ typedef struct tcp_ipv4 tcp_ipv4;
 typedef struct {
   socket_t socket;
   ringbuf_t *recv_buf;
+  struct sockaddr_in addr;
   tcp_ipv4 *host;
 } client_data_t;
 

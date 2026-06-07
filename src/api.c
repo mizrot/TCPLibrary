@@ -60,6 +60,7 @@ void *_thread_process_socket(void *ptr) {
       insert_queue(&(host->messages), ((queue_data_t)msg));
     }
   }
+  delete_htable(&(host->clients), client.addr.sin_addr.s_addr);
   return NULL;
 }
 
@@ -84,7 +85,7 @@ void *_thread_process_connection(void *ptr) {
     ringbuf_t *rb = malloc(sizeof(ringbuf_t));
     init_ringbuf(rb, RECV_RINGBUF_SIZE);
 
-    client_data_t client = {.socket = client_sock, .recv_buf = rb, .host = host};
+    client_data_t client = {.socket = client_sock, .recv_buf = rb, .addr = new_client_addr, .host = host};
     insert_htable(&(host->clients), new_client_addr.sin_addr.s_addr, client);
 
     add_thpool(
@@ -191,7 +192,7 @@ int tcp_shutdown(tcp_ipv4 *target) {
   if (atomic_load(&target->running) == true) {
 
     atomic_store((&target->running), false);
-    shutdown(target->socket, SHUT_RDWR);
+    shutdown(target->socket, SHUTDOWN);
     close_socket(target->socket);
     wake_condition(&target->messages.cond);
 
@@ -203,7 +204,7 @@ int tcp_shutdown(tcp_ipv4 *target) {
 
   } else {
 
-    shutdown(target->socket, SHUT_RDWR);
+    shutdown(target->socket, SHUTDOWN);
     close_socket(target->socket);
   }
 
