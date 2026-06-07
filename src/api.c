@@ -180,11 +180,19 @@ int tcp_connect(tcp_ipv4 *reciever) {
 int tcp_send(tcp_ipv4 *reciever, char *msg) {
 
   if (send_message(reciever->socket, msg)) {
-
     return -1;
   }
 
   return 0;
+}
+
+int tcp_receive(tcp_ipv4 *sender, char *buff){
+
+   if (receive_message(sender->socket, buff) <= 0){
+	return -1;
+   }
+
+   return 0;
 }
 
 int tcp_shutdown(tcp_ipv4 *target) {
