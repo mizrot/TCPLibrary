@@ -115,7 +115,7 @@ typedef struct tcp_ipv4 {
   queue_t messages;
   process_connection_t *th_con;
   process_data_t *th_data;
-
+  ringbuf_t recv_buf;
   atomic_bool running;
 } tcp_ipv4;
 

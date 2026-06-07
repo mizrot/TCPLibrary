@@ -165,6 +165,8 @@ void tcp_create_client(tcp_ipv4 *host, const char *ip, int port) {
   host->socket = create_empty_socket();
   host->addr = create_ipv4_server(ip, port);
   host->running = false;
+
+  init_ringbuf(&(host->recv_buf), RECV_RINGBUF_SIZE);
 }
 
 int tcp_connect(tcp_ipv4 *reciever) {
@@ -177,21 +179,44 @@ int tcp_connect(tcp_ipv4 *reciever) {
   return 0;
 }
 
-int tcp_send(tcp_ipv4 *reciever, char *msg) {
+int tcp_send(tcp_ipv4 *sender, char *msg) {
 
-  if (send_message(reciever->socket, msg)) {
+  if (send_message(sender->socket, msg)) {
     return -1;
   }
 
   return 0;
 }
 
-int tcp_receive(tcp_ipv4 *sender, char *buff){
+int tcp_receive(tcp_ipv4 *reciever, char *buf){
 
-   if (receive_message(sender->socket, buff) <= 0){
+   char tmp[MAX_RECV_SIZE];
+
+   while(1){
+   int n = receive_message(reciever->socket, tmp);
+   if (n <= 0){
 	return -1;
    }
+    write_ringbuf(&reciever->recv_buf, tmp, n);
 
+    while (readable_ringbuf(&reciever->recv_buf) >= 4) {
+
+      uint32_t len;
+      peek_ringbuf(&reciever->recv_buf, (char *)(&len), 4);
+      len = ntohl(len);
+
+      if (readable_ringbuf(&reciever->recv_buf) < 4 + len)
+        break;
+
+      skip_ringbuf(&reciever->recv_buf, 4);
+
+      write_ringbuf(&reciever->recv_buf, "\0", 1);
+
+      read_ringbuf(&reciever->recv_buf, buf, len+1);
+      goto exit;
+    }
+   }
+exit: 
    return 0;
 }
 
