@@ -150,7 +150,7 @@
   <path d="M 150.5 390 C 188 419, 246 449, 270 462"
         marker-end="url(#arrow)"
         fill="none" stroke="rgb(154,154,154)" stroke-width="1.6"/>
-  <text x="204" y="435" text-anchor="start" dominant-baseline="auto"
+  <text x="204" y="410" text-anchor="start" dominant-baseline="auto"
         font-family="Arial,Helvetica,sans-serif" font-size="12" fill="rgb(154,154,154)">push(msg)</text>
 
   <!-- Worker B → stack -->
@@ -162,8 +162,6 @@
   <path d="M 546.5 390 C 500 430, 464 447, 422 462"
         marker-end="url(#arrow)"
         fill="none" stroke="rgb(154,154,154)" stroke-width="1.6"/>
-  <text x="496" y="436" text-anchor="start" dominant-baseline="auto"
-        font-family="Arial,Helvetica,sans-serif" font-size="12" fill="rgb(154,154,154)">push(msg)</text>
 
   <!-- TCP Clients box -->
   <g>
