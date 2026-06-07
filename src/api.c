@@ -114,7 +114,7 @@ void *_thread_process_data(void *ptr) {
     }
 
     tcp_event_ctx_t ctx = {.clients = &host->clients,
-                           .host = host->socket,
+                           .host = host,
                            .sender = msg.socket,
                            .msg = msg.string};
 
