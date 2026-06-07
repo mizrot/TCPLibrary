@@ -81,7 +81,7 @@ typedef struct {
 typedef struct {
   htable_t *clients;
   socket_t sender;
-  tcp_ipv4* host;
+  socket_t host;
   char *msg;
 } tcp_event_ctx_t;
 
