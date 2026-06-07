@@ -26,32 +26,31 @@ The server is built around four distinct thread roles:
 server.c 
 ```c
 void callback(tcp_event_ctx_t *event) {
-  send_message(event->sender, event->msg);
+  send_message(event->sender, "Hello from server.");
 }
 
 int main() {
+  tcp_ipv4 host;
   tcp_init();
-  struct tcp_ipv4 host;
   tcp_create_host(&host, "127.0.0.1", 4455);
-  tcp_subscribe(&host, 5, callback);
-  os_sleep(30 * _TO_SEC);
+  tcp_subscribe(&host, 3, callback);
+  os_sleep(4 * _TO_SEC);
   tcp_shutdown(&host);
   tcp_destroy();
 }
-
 ```
 client.c
 ```c
-int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    return -1;
-  }
+int main() {
+  tcp_ipv4 client;
   tcp_init();
-  struct tcp_ipv4 server;
-  tcp_create_client(&server, "127.0.0.1", 4455);
-  tcp_connect(&server);
-  tcp_send(&server, (argv[1])); 
-  tcp_shutdown(&server);
+  tcp_create_client(&client, "127.0.0.1", 4455);
+  tcp_connect(&client);
+  tcp_send(&client, "Hello from client.");
+  char buff[1024];
+  tcp_receive(&client, buff);
+  printf("%s", buff);
+  tcp_shutdown(&client);
   tcp_destroy();
 }
 ```
