@@ -29,7 +29,7 @@ int hashFunction(htable_t *mp, node_id_t id) {
 
   char key[10];
 
-  sprintf(key, "%d", id);
+  sprintf(key, "%u", id);
 
   int bucketIndex;
   int sum = 0, factor = 31;
