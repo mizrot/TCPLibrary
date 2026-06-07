@@ -33,7 +33,7 @@ void *_thread_process_socket(void *ptr) {
 
   while (atomic_load(&host->running)) {
 
-    int n = receive_message(client.sock, tmp);
+    int n = receive_message(client.socket, tmp);
     if (n <= 0)
       break;
 
@@ -53,7 +53,7 @@ void *_thread_process_socket(void *ptr) {
 
       msg.string = malloc(sizeof(char) * len + 1);
       msg.string[len] = '\0';
-      msg.socket = client.sock;
+      msg.socket = client.socket;
       msg.len = len;
 
       read_ringbuf(client.recv_buf, msg.string, len);
@@ -84,7 +84,7 @@ void *_thread_process_connection(void *ptr) {
     ringbuf_t *rb = malloc(sizeof(ringbuf_t));
     init_ringbuf(rb, RECV_RINGBUF_SIZE);
 
-    client_data_t client = {.sock = client_sock, .recv_buf = rb, .host = host};
+    client_data_t client = {.socket = client_sock, .recv_buf = rb, .host = host};
     insert_htable(&(host->clients), new_client_addr.sin_addr.s_addr, client);
 
     add_thpool(

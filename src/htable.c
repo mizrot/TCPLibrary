@@ -19,8 +19,8 @@ int init_htable(htable_t *mp) {
     return -1;
   }
 
-  for (size_t i = 0; i < mp->capacity; i++){
-	mp->arr[i] = NULL;
+  for (size_t i = 0; i < mp->capacity; i++) {
+    mp->arr[i] = NULL;
   }
   return 0;
 }
@@ -99,7 +99,7 @@ void delete_htable(htable_t *mp, node_id_t id) {
 }
 
 void drain_htable(htable_t *mp, void (*callback)(node_t *)) {
-   lock_mutex(&(mp->mutex));
+  lock_mutex(&(mp->mutex));
 
   for (size_t i = 0; i < mp->capacity; i++) {
 
@@ -134,14 +134,14 @@ node_t *search_htable(htable_t *mp, node_id_t id) {
   return NULL;
 }
 
-  void destroy_connection(node_t * node) {
-    close_socket(node->val.sock);
-    destroy_ringbuf(node->val.recv_buf);
-    free(node->val.recv_buf);
-    free(node);
-  }
+void destroy_connection(node_t *node) {
+  close_socket(node->val.socket);
+  destroy_ringbuf(node->val.recv_buf);
+  free(node->val.recv_buf);
+  free(node);
+}
 
-void destroy_htable(htable_t *mp){
-   drain_htable(mp, destroy_connection);
-   free(mp->arr);
+void destroy_htable(htable_t *mp) {
+  drain_htable(mp, destroy_connection);
+  free(mp->arr);
 }

@@ -1,4 +1,5 @@
 #include "connect.h"
+#include <poll.h>
 
 int establish_connection_client(socket_t clientSocket,
                                 struct sockaddr_in *server, socklen_t len) {
@@ -29,16 +30,31 @@ int establish_connection_client(socket_t clientSocket,
 socket_t establish_connection_server(socket_t serverSocket,
                                      struct sockaddr_in *client,
                                      socklen_t len) {
+    struct pollfd pfd;
+    pfd.fd = serverSocket;
+    pfd.events = POLLIN;
 
-  socket_t sock = accept(serverSocket, (struct sockaddr *)client, &len);
+    int ret = poll(&pfd, 1, -1);
 
-  if (sock == INVALID_SOCKET) {
+    if (ret <= 0)
+        return INVALID_SOCKET;
 
-    print_error("Socket busy or not responding");
+    if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL))
+        return INVALID_SOCKET;
+
+    if (pfd.revents & POLLIN) {
+
+	  socket_t sock = accept(serverSocket, (struct sockaddr *)client, &len);
+
+	  if (sock == INVALID_SOCKET) {
+
+	    print_error("Socket busy or not responding");
+	    return INVALID_SOCKET;
+
+	  }
+
+	  return sock;
+    }
     return INVALID_SOCKET;
-
-  }
-
-  return sock;
 
 }
